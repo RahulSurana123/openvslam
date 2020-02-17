@@ -186,20 +186,19 @@ void mono_tracking(const std::shared_ptr<openvslam::config>& cfg,
 
 
 
-//cv::Mat depth_frame_to_meters(const rs2::pipeline& pipe, const rs2::depth_frame& f)
-//{
-//    using namespace cv;
-//    using namespace rs2;
-//
-//    Mat dm = frame_to_mat(f);
-//    dm.convertTo(dm, CV_64F);
-//    auto depth_scale = pipe.get_active_profile()
-//            .get_device()
-//            .first<depth_sensor>()
-//            .get_depth_scale();
-//    dm = dm * depth_scale;
-//    return dm;
-//}
+cv::Mat depth_frame_to_meters(const rs2::pipeline& pipe, const rs2::depth_frame& f)
+{
+    using namespace rs2;
+
+    cv::Mat dm = frame_to_mat(f);
+    dm.convertTo(dm, CV_64F);
+    auto depth_scale = pipe.get_active_profile()
+            .get_device()
+            .first<depth_sensor>()
+            .get_depth_scale();
+    dm = dm * depth_scale;
+    return dm;
+}
 void rgbd_tracking(const std::shared_ptr<openvslam::config>& cfg,
                    const std::string& vocab_file_path, const std::string& mask_img_path,
                    const std::string& map_db_path) {
@@ -257,7 +256,7 @@ void rgbd_tracking(const std::shared_ptr<openvslam::config>& cfg,
 
 //             is_not_end = video.read(frame);
 //            std::cout << "yo frames "<< frames.get_color_frame() << std::endl;
-            const auto depth_img = frame_to_mat(frames.get_depth_frame());
+            const auto depth_img = depth_frame_to_meters(p,frames.get_depth_frame());
 
             const auto rgb_img = frame_to_mat(frames.get_color_frame());
 
@@ -274,7 +273,7 @@ void rgbd_tracking(const std::shared_ptr<openvslam::config>& cfg,
             if (frames) {
                         //std::cout << "inside slam feedbACK"<< std::endl;
                         // input the current frame and estimate the camera pose
-                        openvslam::Mat44_t camera_pose_check=SLAM.feed_RGBD_frame(rgb_img, depth_img,timestamp);
+                        SLAM.feed_RGBD_frame(rgb_img, depth_img,timestamp);
 
 
             }
@@ -392,22 +391,25 @@ void rgbd_imu_tracking(const std::shared_ptr<openvslam::config>& cfg,
     unsigned int num_frame = 0;
 
     // run the SLAM in another thread
-    std::cout<<"slam dunk  "<<std::endl;
+//    std::cout<<"slam dunk  "<<std::endl;
     std::thread thread([&]() {try{
-        Timer delta_t;
+        Timer delta_t,delta;
+        double x_advance=0,y_advance=0,z_advance=0;
+        openvslam::Mat44_t cam_pose_c;
+        Eigen::VectorXd camera_inputs=Eigen::VectorXd::Zero(3);
         while (true) {//std::cout << "camera loop started"<< std::endl;
-            openvslam::Mat44_t camera_pose_check=openvslam::Mat44_t::Zero();
+
             if (SLAM.terminate_is_requested()) {
                 break;
             }//std::cout << "waiting for frame"<< std::endl;
 
             rs2::frameset frames = p.wait_for_frames();
 
-            const auto depth_img = frame_to_mat(frames.get_depth_frame());
+            const auto depth_img = depth_frame_to_meters(p,frames.get_depth_frame());
 
             const auto rgb_img = frame_to_mat(frames.get_color_frame());
             const auto tp_1 = std::chrono::steady_clock::now();
-            std::cout<<"slam tread dunk "<<std::endl;
+//            std::cout<<"slam tread dunk "<<std::endl;
             if (!frames) {//std::cout << "empty frame detected"<< std::endl;
                 continue;
             }
@@ -418,44 +420,61 @@ void rgbd_imu_tracking(const std::shared_ptr<openvslam::config>& cfg,
 
             if (frames){
                 {
-//                rs2::motion_frame accel_frame = frames.first_or_default(RS2_STREAM_ACCEL);
-//                rs2::motion_frame gyro_frame = frames.first_or_default(RS2_STREAM_GYRO);
+                rs2::motion_frame accel_frame = frames.first_or_default(RS2_STREAM_ACCEL);
+                rs2::motion_frame gyro_frame = frames.first_or_default(RS2_STREAM_GYRO);
 
+                    double delta_try=delta.elapsed();
+                    delta.reset();
+                    cam_pose_c= SLAM.feed_RGBD_frame(rgb_img, depth_img, timestamp);
+                    x_advance=(cam_pose_c(0,3)*delta_try);
+                    y_advance=(cam_pose_c(1,3)*delta_try);
+                    z_advance=(cam_pose_c(2,3)*delta_try);
+                    std::cout<<"camera pose:::::::::::::::"<<cam_pose_c<<std::endl;
+//                    double delta_time_1 = delta_t2.elapsed();
+//                    delta_t2.reset();
+//                    std::cout<<"filter ttttt ka locha  "<<delta_time_1<<std::endl;
 
-                    camera_pose_check = SLAM.feed_RGBD_frame(rgb_img, depth_img, timestamp);
+//                    camera_inputs(3) = camera_pose_check(0, 3);
+//                    camera_inputs(4) = camera_pose_check(0, 3);
+//                    camera_inputs(5) = camera_pose_check(0, 3);
 
-                        //                        std::cout<<"camera time:  "<<out<<std::endl;
-
+                    if(SLAM.reset_is_requested()){
+                        data.reset();
+                    }
 //                        std::cout<<"camera pose:  "<<Eigen::Vector3d(camera_pose_check(0,3),camera_pose_check(0,3),camera_pose_check(0,3))<<std::endl;
 
                     }
 //                std::cout<<"camera pose:  "<<camera_x<<"  "<<camera_y<<"  "<<camera_z<<std::endl;
             }
             rs2::motion_frame gyro_frame = frames.first_or_default(RS2_STREAM_GYRO);rs2::motion_frame accel_frame = frames.first_or_default(RS2_STREAM_ACCEL);
+            if(!gyro_frame){std::cout << "gyro ka locha  " << std::endl;}
+            if(!accel_frame){std::cout << "accel ka locha  " << std::endl;}
             if(gyro_frame && accel_frame){
-                std::cout << "gyro ka locha  " << std::endl;
+//                std::cout << "dono ka locha  " << std::endl;
 
                 rs2_vector accel = accel_frame.get_motion_data();
                 rs2_vector gyro = gyro_frame.get_motion_data();
-
+                double delta_time = delta_t.elapsed();
+                delta_t.reset();
                 Eigen::Vector3d acc_eigen = Eigen::Vector3d(accel.x, accel.y, accel.z);
                 std::cout << "acc" << acc_eigen << std::endl;
-                Eigen::Vector3d gyro_eigen = Eigen::Vector3d(gyro.x, gyro.y, gyro.z);
+                Eigen::Vector3d gyro_eigen = Eigen::Vector3d(gyro.x*delta_time*delta_time/2, gyro.y*delta_time*delta_time/2, gyro.z*delta_time*delta_time/2);
                 //std::cout << "inside slam feedbACK"<< std::endl;
                 // input the current frame and estimate the camera pose
                 std::cout << "timer ka locha  " << std::endl;
-                double delta_time = delta_t.elapsed();
-                delta_t.reset();
-                data.F_tran_matrix(1, 3) = data.F_tran_matrix(2, 4) = data.F_tran_matrix(3, 5) = delta_time;
-                data.P_uncer_cov_matrix(3, 3) = data.P_uncer_cov_matrix(4, 4) = data.P_uncer_cov_matrix(5,5) = delta_time;
-                Eigen::VectorXd camera_inputs = Eigen::VectorXd::Zero(6);
+                if(acc_eigen(0)<0)SLAM.camera_x-=x_advance;
+                else SLAM.camera_x+=x_advance;
+                if(acc_eigen(1)<0)SLAM.camera_y-=y_advance;
+                else SLAM.camera_y+=y_advance;
+                if(acc_eigen(2)<0)SLAM.camera_z-=z_advance;
+                else SLAM.camera_z+=z_advance;
+                data.F_tran_matrix(0, 3) = data.F_tran_matrix(1, 4) = data.F_tran_matrix(2, 5) = delta_time;
+                data.P_uncer_cov_matrix(3, 3) = data.P_uncer_cov_matrix(4, 4) = data.P_uncer_cov_matrix(5,5) = 1000;
                 camera_inputs(0) = SLAM.camera_x;
                 camera_inputs(1) = SLAM.camera_y;
                 camera_inputs(2) = SLAM.camera_z;
-                camera_inputs(3) = camera_pose_check(0, 3);
-                camera_inputs(4) = camera_pose_check(0, 3);
-                camera_inputs(5) = camera_pose_check(0, 3);
-//                Eigen::VectorXd out= data.filtering_camera_pose_with_imu(data.update_imu_lposition_xyz(data.update_imu_lvelocity_xyz(data.acc_xyz_imu(acc_eigen, gyro_eigen),delta_time),delta_time),camera_inputs);
+                std::cout<<"camera inputs  :  "<<camera_inputs<<std::endl;
+                Eigen::VectorXd out= data.filtering_camera_pose_with_imu(data.update_imu_lposition_xyz(data.update_imu_lvelocity_xyz(data.acc_xyz_imu(acc_eigen, gyro_eigen),delta_time),delta_time),camera_inputs);
                 std::cout<<"filter ka locha  "<<delta_time<<std::endl;
 
             }
@@ -468,7 +487,7 @@ void rgbd_imu_tracking(const std::shared_ptr<openvslam::config>& cfg,
             // wait until the timestamp of the next frame
             timestamp += 1.0 / cfg->camera_->fps_;
             ++num_frame;
-            std::cout<<"locha ni khabar nai padti  "<<std::endl;
+//            std::cout<<"locha ni khabar nai padti  "<<std::endl;
             // check if the termination of SLAM system is requested or not
 
         }
@@ -525,6 +544,8 @@ void rgbd_imu_tracking(const std::shared_ptr<openvslam::config>& cfg,
     std::cout << "median tracking time: " << track_times.at(track_times.size() / 2) << "[s]" << std::endl;
     std::cout << "mean tracking time: " << total_track_time / track_times.size() << "[s]" << std::endl;
 }
+
+
 void stereo_tracking(const std::shared_ptr<openvslam::config>& cfg,
                      const std::string& vocab_file_path, const std::string& mask_img_path,
                       const std::string& map_db_path) {
@@ -702,10 +723,11 @@ try {
     }
     else if (cfg->camera_->setup_type_ == openvslam::camera::setup_type_t::RGBDIMU) {
         try {
+
             rgbd_imu_tracking(cfg, vocab_file_path->value(), mask_img_path->value(),
                           map_db_path->value());
         } catch (std::exception &e) {
-            std::cerr << "exception first one is : " << e.what() << std::endl;
+            std::cerr << "exception first one of imu is : " << e.what() << std::endl;
         }
     }else {
         throw std::runtime_error("Invalid setup type: " + cfg->camera_->get_setup_type_string());

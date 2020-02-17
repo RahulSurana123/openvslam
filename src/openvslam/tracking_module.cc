@@ -17,7 +17,6 @@
 #include <spdlog/spdlog.h>
 
 namespace openvslam {
-
 tracking_module::tracking_module(const std::shared_ptr<config>& cfg, system* system, data::map_database* map_db,
                                  data::bow_vocabulary* bow_vocab, data::bow_database* bow_db)
     : cfg_(cfg), camera_(cfg->camera_), system_(system), map_db_(map_db), bow_vocab_(bow_vocab), bow_db_(bow_db),
@@ -130,7 +129,6 @@ Mat44_t tracking_module::track_RGBD_image(const cv::Mat& img, const cv::Mat& dep
     curr_frm_ = data::frame(img_gray_, img_depth, timestamp, extractor_left_, bow_vocab_, camera_, cfg_->true_depth_thr_, mask);
 
     track();
-
     const auto end = std::chrono::system_clock::now();
     elapsed_ms_ = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
     return curr_frm_.cam_pose_cw_;
@@ -141,7 +139,9 @@ void tracking_module::reset() {
 
     initializer_.reset();
     keyfrm_inserter_.reset();
-
+    system_->camera_x=0;
+    system_->camera_y=0;
+    system_->camera_z=0;
     mapper_->request_reset();
     global_optimizer_->request_reset();
 
@@ -368,7 +368,7 @@ bool tracking_module::optimize_current_frame_with_local_map() {
         }
     }
 
-    constexpr unsigned int num_tracked_lms_thr = 20;
+    constexpr unsigned int num_tracked_lms_thr = 20;      // MAX_THRESHOLD_PARAM_HERE  was 20
 
     // if recently relocalized, use the more strict threshold
     if (curr_frm_.id_ < last_reloc_frm_id_ + camera_->fps_ && num_tracked_lms_ < 2 * num_tracked_lms_thr) {

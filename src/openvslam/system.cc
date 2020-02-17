@@ -84,8 +84,10 @@ system::system(const std::shared_ptr<config>& cfg, const std::string& vocab_file
     tracker_->set_mapping_module(mapper_);
     tracker_->set_global_optimization_module(global_optimizer_);
     mapper_->set_tracking_module(tracker_);
+
     mapper_->set_global_optimization_module(global_optimizer_);
     global_optimizer_->set_tracking_module(tracker_);
+
     global_optimizer_->set_mapping_module(mapper_);
 }
 
@@ -116,12 +118,13 @@ system::~system() {
 void system::startup(const bool need_initialize) {
     spdlog::info("startup SLAM system");
     system_is_running_ = true;
-
+    std::cout<<"sys 1222"<<std::endl;
     if (!need_initialize) {
         tracker_->tracking_state_ = tracker_state_t::Lost;
     }
 
     mapping_thread_ = std::unique_ptr<std::thread>(new std::thread(&openvslam::mapping_module::run, mapper_));
+    std::cout<<"sys 12321"<<std::endl;
     global_optimization_thread_ = std::unique_ptr<std::thread>(new std::thread(&openvslam::global_optimization_module::run, global_optimizer_));
 }
 
@@ -274,19 +277,17 @@ Mat44_t system::feed_RGBD_frame(const cv::Mat& rgb_img, const cv::Mat& depthmap,
     if (tracker_->tracking_state_ == tracker_state_t::Tracking) {
         map_publisher_->set_current_cam_pose(cam_pose_cw);
     }
-    system::camera_x+=cam_pose_cw(0,3);
-    system::camera_y+=cam_pose_cw(1,3);
-    system::camera_z+=cam_pose_cw(2,3);
+
     return cam_pose_cw;
 }
 
-    Eigen::Vector3d system::camera_rpy(const Mat44_t cam_pose_cw_){
-        double r,p,y;
-        r = asin(-cam_pose_cw_(3,0));
-        p= asin(cam_pose_cw_(2,0)/cos(r));
-        y=acos(cam_pose_cw_(3,1)/sin(r));
-        return Eigen::Vector3d(r,p,y);
-    }
+//Eigen::Vector3d system::camera_rpy(const Mat44_t cam_pose_cw_){
+//        double r,p,y;
+//        r = asin(-cam_pose_cw_(3,0));
+//        p= asin(cam_pose_cw_(2,0)/cos(r));
+//        y=acos(cam_pose_cw_(3,1)/sin(r));
+//        return Eigen::Vector3d(r,p,y);
+//}
 
 void system::pause_tracker() {
     tracker_->request_pause();

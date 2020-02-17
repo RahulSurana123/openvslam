@@ -116,9 +116,9 @@ public:
     Mat44_t feed_RGBD_frame(const cv::Mat& rgb_img, const cv::Mat& depthmap, const double timestamp, const cv::Mat& mask = cv::Mat{});
     //-----------------------------------------
     // management for pause
-    Eigen::Vector3d camera_rpy(const Mat44_t cam_pose_cw_);
+//    Eigen::Vector3d camera_rpy(const Mat44_t cam_pose_cw_);
 
-    Mat44_t filtering_camera_pose_with_imu(const Mat44_t cam_pose_cw_,Eigen::Vector3d rpy);
+//    Mat44_t filtering_camera_pose_with_imu(const Mat44_t cam_pose_cw_,Eigen::Vector3d rpy);
 
     //! Pause the tracking module
     void pause_tracker();
