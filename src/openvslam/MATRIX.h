@@ -20,6 +20,11 @@ public:
         }
     }
 
+    void getRowCol()
+    {
+        std::cout<<this->r<<","<<this->c<<std::endl;
+    }
+
     void print() {
         for (int i = 0; i < r; ++i) {
             for (int j = 0; j < c; ++j) {
@@ -108,6 +113,7 @@ public:
 
         if (r != c) {
             inv.inv_possible = false;
+            std::cout<<"false";
             return inv;
         }
 
@@ -115,6 +121,7 @@ public:
 
         if (abs(det - 0) <= EOL) {
             inv.inv_possible = false;
+            std::cout<<"false";
             return inv;
         }
 
