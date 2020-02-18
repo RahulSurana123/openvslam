@@ -48,6 +48,9 @@ add_library(${PROJECT_NAME}
             ${CMAKE_CURRENT_SOURCE_DIR}/global_optimization_module.h
             ${CMAKE_CURRENT_SOURCE_DIR}/config.cc
             ${CMAKE_CURRENT_SOURCE_DIR}/system.cc
+	        ${CMAKE_CURRENT_SOURCE_DIR}/imu.cc
+            ${CMAKE_CURRENT_SOURCE_DIR}/imu.h
+            ${CMAKE_CURRENT_SOURCE_DIR}/MATRIX.h
             ${CMAKE_CURRENT_SOURCE_DIR}/tracking_module.cc
             ${CMAKE_CURRENT_SOURCE_DIR}/mapping_module.cc
             ${CMAKE_CURRENT_SOURCE_DIR}/global_optimization_module.cc)

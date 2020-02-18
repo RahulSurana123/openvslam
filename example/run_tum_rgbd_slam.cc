@@ -159,7 +159,7 @@ void rgbd_tracking(const std::shared_ptr<openvslam::config>& cfg,
 #elif USE_SOCKET_PUBLISHER
     socket_publisher::publisher publisher(cfg, &SLAM, SLAM.get_frame_publisher(), SLAM.get_map_publisher());
 #endif
-
+std::mutex rahul;
     std::vector<double> track_times;
     track_times.reserve(frames.size());
 
@@ -174,7 +174,9 @@ void rgbd_tracking(const std::shared_ptr<openvslam::config>& cfg,
 
             if (!rgb_img.empty() && !depth_img.empty() && (i % frame_skip == 0)) {
                 // input the current frame and estimate the camera pose
+                rahul.lock();
                 SLAM.feed_RGBD_frame(rgb_img, depth_img, frame.timestamp_);
+                rahul.unlock();
             }
 
             const auto tp_2 = std::chrono::steady_clock::now();
