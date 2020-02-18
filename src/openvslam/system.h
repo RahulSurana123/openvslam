@@ -37,7 +37,7 @@ class system {
 public:
     //! Constructor
     double camera_x=0,camera_y=0,camera_z=0;
-
+//    Mat44_t xyz;
     system(const std::shared_ptr<config>& cfg, const std::string& vocab_file_path);
 
     //! Destructor

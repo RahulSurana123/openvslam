@@ -30,7 +30,7 @@ viewer::viewer(const std::shared_ptr<openvslam::config>& cfg, openvslam::system*
       mapping_mode_(system->mapping_module_is_enabled()),
       loop_detection_mode_(system->loop_detector_is_enabled()) {}
 
-void viewer::run() {
+void viewer::run() {try{
     is_terminated_ = false;
 
     pangolin::CreateWindowAndBind(map_viewer_name_, 1024, 768);
@@ -118,9 +118,11 @@ void viewer::run() {
     system_->request_terminate();
 
     terminate();
+}catch(std::exception& e) {
+        std::cerr << "exception viewer_chu is : " <<e.what()<< std::endl;}
 }
 
-void viewer::create_menu_panel() {
+void viewer::create_menu_panel() {try{
     pangolin::CreatePanel("menu").SetBounds(0.0, 1.0, 0.0, pangolin::Attach::Pix(175));
     menu_follow_camera_ = std::unique_ptr<pangolin::Var<bool>>(new pangolin::Var<bool>("menu.Follow Camera", true, true));
     menu_grid_ = std::unique_ptr<pangolin::Var<bool>>(new pangolin::Var<bool>("menu.Show Grid", false, true));
@@ -135,6 +137,8 @@ void viewer::create_menu_panel() {
     menu_terminate_ = std::unique_ptr<pangolin::Var<bool>>(new pangolin::Var<bool>("menu.Terminate", false, false));
     menu_frm_size_ = std::unique_ptr<pangolin::Var<float>>(new pangolin::Var<float>("menu.Frame Size", 1.0, 1e-1, 1e1, true));
     menu_lm_size_ = std::unique_ptr<pangolin::Var<float>>(new pangolin::Var<float>("menu.Landmark Size", 1.0, 1e-1, 1e1, true));
+}catch(std::exception& e) {
+        std::cerr << "exception viewer_panel_chu is : " <<e.what()<< std::endl;}
 }
 
 void viewer::follow_camera(const pangolin::OpenGlMatrix& gl_cam_pose_wc) {
@@ -190,17 +194,21 @@ pangolin::OpenGlMatrix viewer::get_current_cam_pose() {
 
 void viewer::draw_current_cam_pose(const pangolin::OpenGlMatrix& gl_cam_pose_wc) {
     // frustum size of the frame
-    const float w = camera_size_ * *menu_frm_size_;
+     try {
+         const float w = camera_size_ * *menu_frm_size_;
 
-    glLineWidth(camera_line_width_);
-    glColor3fv(cs_.curr_cam_.data());
-    draw_camera(gl_cam_pose_wc, w);
+         glLineWidth(camera_line_width_);
+         glColor3fv(cs_.curr_cam_.data());
+         draw_camera(gl_cam_pose_wc, w);
+         std::cout << "While current_cam_pose " << std::endl;
+     }catch(std::exception& e) {
+         std::cerr << "exception current_cam_pose_chu is : " <<e.what()<< std::endl;}
 }
 
-void viewer::draw_keyframes() {
+void viewer::draw_keyframes() {try{
     // frustum size of keyframes
     const float w = keyfrm_size_ * *menu_frm_size_;
-
+    std::cout<<"While draw_keyframes "<<std::endl;
     std::vector<openvslam::data::keyframe*> keyfrms;
     map_publisher_->get_keyframes(keyfrms);
 
@@ -270,14 +278,16 @@ void viewer::draw_keyframes() {
         }
 
         glEnd();
-    }
+    }}
+    catch(std::exception& e) {
+        std::cerr << "exception draw_keyframe_chu is : " <<e.what()<< std::endl;}
 }
 
-void viewer::draw_landmarks() {
+void viewer::draw_landmarks() {try{
     if (!*menu_show_lms_) {
         return;
     }
-
+    std::cout<<"While draw_landmarks "<<std::endl;
     std::vector<openvslam::data::landmark*> landmarks;
     std::set<openvslam::data::landmark*> local_landmarks;
 
@@ -323,6 +333,8 @@ void viewer::draw_landmarks() {
     }
 
     glEnd();
+}catch(std::exception& e) {
+        std::cerr << "exception draw_landmark_chu is : " <<e.what()<< std::endl;}
 }
 
 void viewer::draw_camera(const pangolin::OpenGlMatrix& gl_cam_pose_wc, const float width) const {
@@ -366,7 +378,7 @@ void viewer::draw_frustum(const float w) const {
     draw_line(-w, -h, z, w, -h, z);
 }
 
-void viewer::reset() {
+void viewer::reset() {try{
     // reset menu checks
     *menu_follow_camera_ = true;
     *menu_show_keyfrms_ = true;
@@ -401,6 +413,8 @@ void viewer::reset() {
 
     // execute reset
     system_->request_reset();
+}catch(std::exception& e) {
+        std::cerr << "exception viewer_reset_chu is : " <<e.what()<< std::endl;}
 }
 
 void viewer::check_state_transition() {

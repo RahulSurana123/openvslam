@@ -20,6 +20,7 @@ mapping_module::mapping_module(data::map_database* map_db, const bool is_monocul
     : local_map_cleaner_(new module::local_map_cleaner(is_monocular)), map_db_(map_db),
       local_bundle_adjuster_(new optimize::local_bundle_adjuster()), is_monocular_(is_monocular) {
     spdlog::debug("CONSTRUCT: mapping_module");
+    std::cout<<"While mapping "<<std::endl;
 }
 
 mapping_module::~mapping_module() {
@@ -40,61 +41,66 @@ void mapping_module::run() {
     is_terminated_ = false;
 
     while (true) {
-        // waiting time for the other threads
-        std::this_thread::sleep_for(std::chrono::milliseconds(5));
+        try {
 
-        // LOCK
-        set_keyframe_acceptability(false);
+            // waiting time for the other threads
+            std::this_thread::sleep_for(std::chrono::milliseconds(5));
 
-        // check if termination is requested
-        if (terminate_is_requested()) {
-            // terminate and break
-            terminate();
-            break;
-        }
+            // LOCK
+            set_keyframe_acceptability(false);
 
-        // check if pause is requested
-        if (pause_is_requested()) {
-            // if any keyframe is queued, all of them must be processed before the pause
-            while (keyframe_is_queued()) {
-                // create and extend the map with the new keyframe
-                mapping_with_new_keyframe();
-                // send the new keyframe to the global optimization module
-                global_optimizer_->queue_keyframe(cur_keyfrm_);
+            // check if termination is requested
+            if (terminate_is_requested()) {
+                // terminate and break
+                terminate();
+                break;
             }
-            // pause and wait
-            pause();
-            // check if termination or reset is requested during pause
-            while (is_paused() && !terminate_is_requested() && !reset_is_requested()) {
-                std::this_thread::sleep_for(std::chrono::milliseconds(3));
+
+            // check if pause is requested
+            if (pause_is_requested()) {
+                // if any keyframe is queued, all of them must be processed before the pause
+                while (keyframe_is_queued()) {
+                    // create and extend the map with the new keyframe
+                    mapping_with_new_keyframe();
+                    // send the new keyframe to the global optimization module
+                    global_optimizer_->queue_keyframe(cur_keyfrm_);
+                }
+                // pause and wait
+                pause();
+                // check if termination or reset is requested during pause
+                while (is_paused() && !terminate_is_requested() && !reset_is_requested()) {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(3));
+                }
             }
-        }
 
-        // check if reset is requested
-        if (reset_is_requested()) {
-            // reset, UNLOCK and continue
-            reset();
+            // check if reset is requested
+            if (reset_is_requested()) {
+                // reset, UNLOCK and continue
+                reset();
+                set_keyframe_acceptability(true);
+                continue;
+            }
+
+            // if the queue is empty, the following process is not needed
+            if (!keyframe_is_queued()) {
+                // UNLOCK and continue
+                set_keyframe_acceptability(true);
+                continue;
+            }
+
+            // create and extend the map with the new keyframe
+            mapping_with_new_keyframe();
+            // send the new keyframe to the global optimization module
+            global_optimizer_->queue_keyframe(cur_keyfrm_);
+
+            // LOCK end
             set_keyframe_acceptability(true);
-            continue;
         }
-
-        // if the queue is empty, the following process is not needed
-        if (!keyframe_is_queued()) {
-            // UNLOCK and continue
-            set_keyframe_acceptability(true);
-            continue;
+        catch (std::exception &e) {
+            std::cerr << "exception mapping_chu is : " << e.what() << std::endl;
         }
-
-        // create and extend the map with the new keyframe
-        mapping_with_new_keyframe();
-        // send the new keyframe to the global optimization module
-        global_optimizer_->queue_keyframe(cur_keyfrm_);
-
-        // LOCK end
-        set_keyframe_acceptability(true);
+        spdlog::info("terminate mapping module");
     }
-
-    spdlog::info("terminate mapping module");
 }
 
 void mapping_module::queue_keyframe(data::keyframe* keyfrm) {
@@ -449,11 +455,13 @@ bool mapping_module::is_paused() const {
 }
 
 bool mapping_module::pause_is_requested() const {
+
     std::lock_guard<std::mutex> lock(mtx_pause_);
     return pause_is_requested_ && !force_to_run_;
 }
 
 void mapping_module::pause() {
+    std::cout<<"While mapping module pause"<<std::endl;
     std::lock_guard<std::mutex> lock(mtx_pause_);
     spdlog::info("pause mapping module");
     is_paused_ = true;

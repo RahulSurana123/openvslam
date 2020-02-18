@@ -40,8 +40,8 @@ Feature.min_fast_threshold: 7
 # Tracking Parameters #
 #=====================#
 
-depth_threshold: 4.0
-depthmap_factor: 5.0
+depth_threshold: 40.0
+depthmap_factor: 500.0
 
 #===========================#
 # PangolinViewer Parameters #

@@ -16,6 +16,7 @@ global_optimization_module::global_optimization_module(data::map_database* map_d
       loop_bundle_adjuster_(new module::loop_bundle_adjuster(map_db)),
       graph_optimizer_(new optimize::graph_optimizer(map_db, fix_scale)) {
     spdlog::debug("CONSTRUCT: global_optimization_module");
+    std::cout<<"While opti "<<std::endl;
 }
 
 global_optimization_module::~global_optimization_module() {
@@ -51,7 +52,7 @@ bool global_optimization_module::loop_detector_is_enabled() const {
 
 void global_optimization_module::run() {
     spdlog::info("start global optimization module");
-
+try {
     is_terminated_ = false;
 
     while (true) {
@@ -117,7 +118,8 @@ void global_optimization_module::run() {
 
         correct_loop();
     }
-
+}catch(std::exception& e) {
+    std::cerr << "exception global_run_chu is : " <<e.what()<< std::endl;}
     spdlog::info("terminate global optimization module");
 }
 
@@ -370,7 +372,7 @@ void global_optimization_module::replace_duplicated_landmarks(const std::vector<
 auto global_optimization_module::extract_new_connections(const std::vector<data::keyframe*>& covisibilities) const
     -> std::map<data::keyframe*, std::set<data::keyframe*>> {
     std::map<data::keyframe*, std::set<data::keyframe*>> new_connections;
-
+try {
     for (auto covisibility : covisibilities) {
         // acquire neighbors BEFORE loop fusion (because update_connections() is not called yet)
         const auto neighbors_before_update = covisibility->graph_node_->get_covisibilities();
@@ -389,7 +391,9 @@ auto global_optimization_module::extract_new_connections(const std::vector<data:
             new_connections.at(covisibility).erase(keyfrm_to_erase);
         }
     }
-
+}
+catch(std::exception& e) {
+    std::cerr << "exception extract_new_connection_chu is : " <<e.what()<< std::endl;}
     return new_connections;
 }
 
@@ -425,6 +429,7 @@ void global_optimization_module::reset() {
 }
 
 void global_optimization_module::request_pause() {
+
     std::lock_guard<std::mutex> lock1(mtx_pause_);
     pause_is_requested_ = true;
 }
@@ -440,6 +445,7 @@ bool global_optimization_module::is_paused() const {
 }
 
 void global_optimization_module::pause() {
+    std::cout<<"While global optimize pause"<<std::endl;
     std::lock_guard<std::mutex> lock(mtx_pause_);
     spdlog::info("pause global optimization module");
     is_paused_ = true;

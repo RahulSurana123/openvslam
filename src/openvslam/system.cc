@@ -11,8 +11,9 @@
 #include "openvslam/io/map_database_io.h"
 #include "openvslam/publish/map_publisher.h"
 #include "openvslam/publish/frame_publisher.h"
-#include "openvslam/imu.h"
+//#include "openvslam/imu.h"
 #include <thread>
+#include <ctime>
 
 #include <spdlog/spdlog.h>
 
@@ -63,22 +64,25 @@ system::system(const std::shared_ptr<config>& cfg, const std::string& vocab_file
         exit(EXIT_FAILURE);
     }
 #endif
-
+try {
     // database
     cam_db_ = new data::camera_database(camera_);
     map_db_ = new data::map_database();
     bow_db_ = new data::bow_database(bow_vocab_);
 
-    // frame and map publisher
-    frame_publisher_ = std::shared_ptr<publish::frame_publisher>(new publish::frame_publisher(cfg_, map_db_));
-    map_publisher_ = std::shared_ptr<publish::map_publisher>(new publish::map_publisher(cfg_, map_db_));
+     // frame and map publisher
+     frame_publisher_ = std::shared_ptr<publish::frame_publisher>(new publish::frame_publisher(cfg_, map_db_));
+     map_publisher_ = std::shared_ptr<publish::map_publisher>(new publish::map_publisher(cfg_, map_db_));
 
     // tracking module
     tracker_ = new tracking_module(cfg_, this, map_db_, bow_vocab_, bow_db_);
     // mapping module
+
     mapper_ = new mapping_module(map_db_, camera_->setup_type_ == camera::setup_type_t::Monocular);
+
     // global optimization module
-    global_optimizer_ = new global_optimization_module(map_db_, bow_db_, bow_vocab_, camera_->setup_type_ != camera::setup_type_t::Monocular);
+    global_optimizer_ = new global_optimization_module(map_db_, bow_db_, bow_vocab_,
+                                                       camera_->setup_type_ != camera::setup_type_t::Monocular);
 
     // connect modules each other
     tracker_->set_mapping_module(mapper_);
@@ -89,6 +93,9 @@ system::system(const std::shared_ptr<config>& cfg, const std::string& vocab_file
     global_optimizer_->set_tracking_module(tracker_);
 
     global_optimizer_->set_mapping_module(mapper_);
+} catch(std::exception& e) {
+    std::cerr << "exception system construct is : " <<e.what()<< std::endl;}
+
 }
 
 system::~system() {
@@ -115,7 +122,7 @@ system::~system() {
     spdlog::debug("DESTRUCT: system");
 }
 
-void system::startup(const bool need_initialize) {
+void system::startup(const bool need_initialize) {try{
     spdlog::info("startup SLAM system");
     system_is_running_ = true;
     std::cout<<"sys 1222"<<std::endl;
@@ -125,26 +132,32 @@ void system::startup(const bool need_initialize) {
 
     mapping_thread_ = std::unique_ptr<std::thread>(new std::thread(&openvslam::mapping_module::run, mapper_));
     std::cout<<"sys 12321"<<std::endl;
-    global_optimization_thread_ = std::unique_ptr<std::thread>(new std::thread(&openvslam::global_optimization_module::run, global_optimizer_));
+    global_optimization_thread_ = std::unique_ptr<std::thread>(new std::thread(&openvslam::global_optimization_module::run, global_optimizer_));}
+    catch(std::exception& e) {
+        std::cerr << "exception system startup is : " <<e.what()<< std::endl;}
+
 }
 
-void system::shutdown() {
-    // terminate the other threads
-    mapper_->request_terminate();
-    global_optimizer_->request_terminate();
-    // wait until they stop
-    while (!mapper_->is_terminated()
-           || !global_optimizer_->is_terminated()
-           || global_optimizer_->loop_BA_is_running()) {
-        std::this_thread::sleep_for(std::chrono::microseconds(5000));
+void system::shutdown() {try {
+        // terminate the other threads
+        mapper_->request_terminate();
+        global_optimizer_->request_terminate();
+        // wait until they stop
+        while (!mapper_->is_terminated()
+               || !global_optimizer_->is_terminated()
+               || global_optimizer_->loop_BA_is_running()) {
+            std::this_thread::sleep_for(std::chrono::microseconds(5000));
+        }
+
+        // wait until the threads stop
+        mapping_thread_->join();
+        global_optimization_thread_->join();
+
+        spdlog::info("shutdown SLAM system");
+        system_is_running_ = false;
     }
-
-    // wait until the threads stop
-    mapping_thread_->join();
-    global_optimization_thread_->join();
-
-    spdlog::info("shutdown SLAM system");
-    system_is_running_ = false;
+    catch(std::exception& e) {
+        std::cerr << "exception system_shut_chu is : " <<e.what()<< std::endl;}
 }
 
 void system::save_frame_trajectory(const std::string& path, const std::string& format) const {
@@ -175,12 +188,15 @@ void system::save_map_database(const std::string& path) const {
     resume_other_threads();
 }
 
-const std::shared_ptr<publish::map_publisher> system::get_map_publisher() const {
-    return map_publisher_;
+const std::shared_ptr<publish::map_publisher> system::get_map_publisher() const {try{
+    return map_publisher_;}
+    catch(std::exception& e) {
+        std::cerr << "exception get_map_publisher_chu is : " <<e.what()<< std::endl;}
 }
 
-const std::shared_ptr<publish::frame_publisher> system::get_frame_publisher() const {
-    return frame_publisher_;
+const std::shared_ptr<publish::frame_publisher> system::get_frame_publisher() const {try{
+    return frame_publisher_;}catch(std::exception& e) {
+        std::cerr << "exception frame_publisher_chu is : " <<e.what()<< std::endl;}
 }
 
 void system::enable_mapping_module() {
@@ -277,7 +293,7 @@ Mat44_t system::feed_RGBD_frame(const cv::Mat& rgb_img, const cv::Mat& depthmap,
     if (tracker_->tracking_state_ == tracker_state_t::Tracking) {
         map_publisher_->set_current_cam_pose(cam_pose_cw);
     }
-
+//    xyz=cam_pose_cw.replicate(1,1);
     return cam_pose_cw;
 }
 

@@ -1,6 +1,5 @@
 
 #include "imu.h"
-
 #include <utility>
 #include "opencv2/core/eigen.hpp"
 
@@ -8,24 +7,25 @@ namespace openvslam{
 
 
 
-    Eigen::Vector3d imu::update_imu_lvelocity_xyz(Eigen::Vector3d imu_Acc_,double delta_time){
-        imu_vx+=(imu_Acc_(0)*delta_time);    // TODO put delta time here
-        imu_vy+=(imu_Acc_(1)*delta_time);
-        imu_vz+=(imu_Acc_(2)*delta_time);
-        std::cout<<"start::imu VVVV MATRIX ::"<< imu_vx<<" "<<imu_vy <<"  "<<imu_vz                                                                                                                                                                                                                                                                                                                                                                                                                        <<std::endl;
-        return Eigen::Vector3d(imu_vx,imu_vy,imu_vz);
+    Matri imu::update_imu_lvelocity_xyz(Eigen::Vector3d imu_Acc_,double delta_time){
+        Matri c = Matri(3,1,0);
+        c.mat[0][0]+=(imu_Acc_(0)*delta_time);    // TODO put delta time here
+        c.mat[1][0]+=(imu_Acc_(1)*delta_time);
+        c.mat[2][0]+=(imu_Acc_(2)*delta_time);
+     //   std::cout<<"start::imu VVVV MATRIX ::"<< imu_vx<<" "<<imu_vy <<"  "<<imu_vz                                                                                                                                                                                                                                                                                                                                                                                                                        <<std::endl;
+        return c;
     }
-    Eigen::VectorXd imu::update_imu_lposition_xyz(Eigen::Vector3d imu_lvel_,double delta_time){
-       Eigen::VectorXd out=Eigen::VectorXd::Zero(6);
-        imu_x+=(imu_lvel_(0)*delta_time);    // TODO put delta time here
-        imu_y+=(imu_lvel_(1)*delta_time);
-        imu_z+=(imu_lvel_(2)*delta_time);
-        out(0)=imu_x;
-        out(1)=imu_y;
-        out(2)=imu_z;
-        out(3)=imu_lvel_(0);
-        out(4)=imu_lvel_(1);
-        out(5)=imu_lvel_(2);
+    Matri imu::update_imu_lposition_xyz(Matri imu_lvel_,double delta_time){
+       Matri out=Matri(6,1,0);
+        imu_x+=(imu_lvel_.mat[0][0]*delta_time);    // TODO put delta time here
+        imu_y+=(imu_lvel_.mat[1][0]*delta_time);
+        imu_z+=(imu_lvel_.mat[2][0]*delta_time);
+        out.mat[0][0]=imu_x;
+        out.mat[1][0]=imu_y;
+        out.mat[2][0]=imu_z;
+        out.mat[3][0]=imu_lvel_.mat[0][0];
+        out.mat[4][0]=imu_lvel_.mat[1][0];
+        out.mat[5][0]=imu_lvel_.mat[2][0];
         return out;
     }
     Eigen::Vector3d imu::acc_xyz_imu(Eigen::Vector3d imu_Acc_,Eigen::Vector3d imu_rpy_){
@@ -36,27 +36,38 @@ namespace openvslam{
         imu_Acc_(0)=imu_Acc_(0)-bias_gx;
         imu_Acc_(1)=imu_Acc_(1)-bias_gy;
         imu_Acc_(2)=imu_Acc_(2)-bias_gz;
-        std::cout<<"start::imu  MATRIX ::"<< imu_Acc_ <<std::endl;
+        //std::cout<<"start::imu  MATRIX ::"<< imu_Acc_ <<std::endl;
         return imu_Acc_;
     }
-    Eigen::VectorXd imu::filtering_camera_pose_with_imu(Eigen::VectorXd imu_pose_cw_,const Eigen::VectorXd& camera_input){
+    Matri imu::filtering_camera_pose_with_imu(Matri imu_pose_cw_, Matri& camera_input){
         try {
-            imu_pose_cw_ = F_tran_matrix * imu_pose_cw_;
-//        std::cout<<"start:: "<<(imu_pose_cw_)<<"F MATRIX ::"<< F_tran_matrix <<std::endl;
+
+            imu_pose_cw_ = F_tran_matrix*imu_pose_cw_;
+//            imu_pose_cw_.print();
+        std::cout<<"start:: F MATRIX ::"<<std::endl;
 //        std::cout<<"P MATRIX ::"<< P_uncer_cov_matrix <<std::endl;
-            P_uncer_cov_matrix = ((F_tran_matrix * P_uncer_cov_matrix) * F_tran_matrix.transpose());
-//        std::cout<<"start:: "<<imu_pose_cw_<<"P MATRIX ::"<< P_uncer_cov_matrix <<std::endl;
-            Eigen::MatrixXd y = camera_input - (H_mea_matrix * imu_pose_cw_);
-        std::cout<<"end of y ::"<<y<<"H MATRIX  ::" <<H_mea_matrix<<std::endl;
-            Eigen::MatrixXd s = (H_mea_matrix * P_uncer_cov_matrix * H_mea_matrix.transpose()) + R_noise_matrix;
+            P_uncer_cov_matrix = ((F_tran_matrix*P_uncer_cov_matrix)*F_tran_matrix^1);
+        std::cout<<"start:: "<<"P MATRIX ::" <<std::endl;
+            Matri temp =(H_mea_matrix*imu_pose_cw_);
+            Matri temp1 =(H_mea_matrix * P_uncer_cov_matrix);
+            Matri y = camera_input-temp;
+            temp=H_mea_matrix^1;
+        std::cout<<"end of y ::"<<"H MATRIX  ::"<<std::endl;
+            Matri s = (temp1 * temp) + R_noise_matrix;
 //        std::cout<<"end of s -1 ::"<<s.inverse()<<std::endl;
-            Eigen::MatrixXd k = (P_uncer_cov_matrix * H_mea_matrix.transpose() * s.inverse());
-        std::cout<<"end of k ::"<<k<<std::endl;
-            imu_pose_cw_ = imu_pose_cw_ + (k * y);
-            P_uncer_cov_matrix = (Eigen::MatrixXd::Identity(6, 6) - (k * H_mea_matrix)) * P_uncer_cov_matrix;
+            temp1=s.inverse();
+            temp = temp * temp1;
+            Matri k = (P_uncer_cov_matrix*temp);
+        std::cout<<"end of k ::"<<std::endl;
+            temp =(k*y);
+            imu_pose_cw_ = imu_pose_cw_ + temp;
+            temp = (k * H_mea_matrix);
+            P_uncer_cov_matrix = (Matri(6, 6, 1 ) - temp) * P_uncer_cov_matrix;
+            imu_pose_cw_.print();
         }catch(std::exception& e) {
-            std::cerr << "exception run_camera_slam is : " <<e.what()<< std::endl;}
-        std::cout<<"end::"<<(imu_pose_cw_)<<std::endl;
+            std::cerr << "exception imu_chu is : " <<e.what()<< std::endl;}
+    //    std::cout<<"end::"<<(imu_pose_cw_)<<std::endl;
+        std::cout<<"While End : "<<std::endl;
         return imu_pose_cw_;
     }
     void imu::reset(){
