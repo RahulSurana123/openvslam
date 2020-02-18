@@ -242,6 +242,7 @@ void rgbd_tracking(const std::shared_ptr<openvslam::config>& cfg,
 
     rs2::pipeline p;
     p.start(c);
+
     openvslam::imu data1;
     openvslam::MATRIX camera_inputs=openvslam::MATRIX(3,1,0);
 //    cv::Mat frame;
@@ -349,8 +350,10 @@ void rgbd_tracking(const std::shared_ptr<openvslam::config>& cfg,
                 camera_inputs.mat[1][0] = SLAM.camera_y;
                 camera_inputs.mat[2][0] = SLAM.camera_z;
                 camera_inputs.print();
-                openvslam::MATRIX out= data1.filtering_camera_pose_with_imu(data1.update_imu_lposition_xyz(data1.update_imu_lvelocity_xyz(data1.acc_xyz_imu(acc_eigen, gyro_eigen),delta_time),delta_time),camera_inputs);
-                out.print();
+
+//                openvslam::MATRIX out= data1.filtering_camera_pose_with_imu(data1.update_imu_lposition_xyz(data1.update_imu_lvelocity_xyz(data1.acc_xyz_imu(acc_eigen, gyro_eigen),delta_time),delta_time),camera_inputs);
+
+//                out.print();
                 //  std::cout<<"camera inputs  :  "<<camera_inputs<<std::endl;
             }
             const auto tp_2 = std::chrono::steady_clock::now();

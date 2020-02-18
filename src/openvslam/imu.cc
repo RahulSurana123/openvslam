@@ -51,6 +51,7 @@ namespace openvslam {
 
     MATRIX imu::filtering_camera_pose_with_imu(MATRIX imu_pose_cw_, MATRIX camera_input) {
         try {
+
             imu_pose_cw_ = F_tran_matrix*imu_pose_cw_;
 //        std::cout<<"start:: "<<(imu_pose_cw_)<<"F MATRIX ::"<< F_tran_matrix <<std::endl;
 //        std::cout<<"P MATRIX ::"<< P_uncer_cov_matrix <<std::endl;
@@ -70,17 +71,18 @@ namespace openvslam {
 //        std::cout<<"end of s -1 ::"<<s.inverse()<<std::endl;
 
             std::cout<<"error aa reli he\n";
-            temp2=H_mea_matrix^1;
-            temp2.getRowCol();
+            temp2= H_mea_matrix^1;
             temp=P_uncer_cov_matrix*temp2;
-            temp.print();
-            temp1=s.inverse();
-            temp1.print();
+            temp.getRowCol();
+            temp1=MATRIX(3,3,1);
+//            int k=4;
+            std::lock_guard<std::mutex> lock(mtx_imu_);
+
             MATRIX k = (temp * temp1);
             k.getRowCol();
             std::cout<<"error aa reli he\n";
 //            std::cout << "end of k ::" << k << std::endl;
-            temp = k*y;
+            temp = y*k;
             std::cout<<"tari sasu no sak\n";
             imu_pose_cw_ = imu_pose_cw_ + (temp);
             std::cout<<"tari sasu no sak\n";

@@ -1,5 +1,6 @@
 #include "iostream"
 #include <vector>
+#include <mutex>
 #include "MATRIX.h"
 //#include <Eigen/Dense>
 //#include "/usr/include/eigen3/Eigen/Dense"
@@ -9,8 +10,9 @@ namespace openvslam{
 
     class imu{
     private:
-            double imu_x=0,imu_y=0,imu_z=0,imu_vx=0,imu_vy=0,imu_vz=0;
+            double imu_x,imu_y,imu_z,imu_vx,imu_vy,imu_vz;
             MATRIX vxyz;
+            mutable std::mutex mtx_imu_;
 //        h_mea_matrix[3][6]={{1,0,0,0,0,0},
 //            {0,1,0,0,0,0},
 //            {0,0,1,0,0,0}};
@@ -43,7 +45,7 @@ namespace openvslam{
         MATRIX P_uncer_cov_matrix;// = MATRIX(6,6,0);
         MATRIX H_mea_matrix;// = MATRIX(3,6,1);
         MATRIX R_noise_matrix;// = MATRIX(3,3,0);
-        imu(){
+        imu(){imu_x=0,imu_y=0,imu_z=0,imu_vx=0,imu_vy=0,imu_vz=0;
                 F_tran_matrix = MATRIX(6,6,1);
                 P_uncer_cov_matrix  = MATRIX(6,6,0);
                 H_mea_matrix = MATRIX(3,6,1);

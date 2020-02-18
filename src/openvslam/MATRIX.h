@@ -107,36 +107,36 @@ public:
     }
 
 
-    MATRIX inverse() {
+    void inverse() {
 
-        MATRIX inv(r, c, 0);
+//        MATRIX inv(r, c, 0);
 
         if (r != c) {
-            inv.inv_possible = false;
+            this-> inv_possible = false;
             std::cout<<"false";
-            return inv;
+
         }
 
         double det = determinant(*this, r);
 
         if (abs(det - 0) <= EOL) {
-            inv.inv_possible = false;
+            this->inv_possible = false;
             std::cout<<"false";
-            return inv;
+
         }
 
         MATRIX adj(r, c, 0);
 
         adjoint(*this, adj);
-        inv.inv_possible = true;
+        this->inv_possible = true;
 
         // Find Inverse using formula "inverse(A) = adj(A)/det(A)"
         for (int i = 0; i < r; i++)
             for (int j = 0; j < c; j++)
-                inv.mat[i][j] = adj.mat[i][j] / double(det);
+                this->mat[i][j] = adj.mat[i][j] / double(det);
 
 
-        return inv;
+
     }
 
     static void getCofactor(MATRIX &A, MATRIX &temp, int p, int q, int n) {
