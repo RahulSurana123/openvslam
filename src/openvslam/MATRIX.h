@@ -1,5 +1,7 @@
 #include <vector>
 #include <iostream>
+#include <csignal>
+
 namespace openvslam{
 class MATRIX {
 public:
@@ -48,6 +50,11 @@ public:
             for (int j = 0; j < col; ++j) {
                 for (int k = 0; k < r; ++k) {
                     c.mat[i][j] = c.mat[i][j] + mat[i][k] * b.mat[k][j];
+                    if(c.mat[i][j] == NAN || c.mat[i][j] == INFINITY || c.mat[i][j] == -(INFINITY)){
+                        throw raise(0);
+
+                    }
+
                 }
             }
         }
@@ -107,36 +114,26 @@ public:
     }
 
 
-    void inverse() {
+    MATRIX inverse(){
 
-//        MATRIX inv(r, c, 0);
-
-        if (r != c) {
-            this-> inv_possible = false;
-            std::cout<<"false";
-
+        if(r != 3 or c != 3){
+            std::cout << "cant possible with this function";
+            return *this;
         }
 
-        double det = determinant(*this, r);
+        double determinant = 0;
 
-        if (abs(det - 0) <= EOL) {
-            this->inv_possible = false;
-            std::cout<<"false";
+        for(int i = 0; i < 3; i++)
+            determinant = determinant + (mat[0][i] * (mat[1][(i+1)%3] * mat[2][(i+2)%3] - mat[1][(i+2)%3] * mat[2][(i+1)%3]));
 
+        MATRIX m(3, 3, 0);
+        for(int i = 0; i < 3; i++){
+            for(int j = 0; j < 3; j++){
+                m.mat[i][j] = ((mat[(j+1)%3][(i+1)%3] * mat[(j+2)%3][(i+2)%3]) - (mat[(j+1)%3][(i+2)%3] * mat[(j+2)%3][(i+1)%3]))/ determinant;
+
+            }
         }
-
-        MATRIX adj(r, c, 0);
-
-        adjoint(*this, adj);
-        this->inv_possible = true;
-
-        // Find Inverse using formula "inverse(A) = adj(A)/det(A)"
-        for (int i = 0; i < r; i++)
-            for (int j = 0; j < c; j++)
-                this->mat[i][j] = adj.mat[i][j] / double(det);
-
-
-
+        return m    ;
     }
 
     static void getCofactor(MATRIX &A, MATRIX &temp, int p, int q, int n) {

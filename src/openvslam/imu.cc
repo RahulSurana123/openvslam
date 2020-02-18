@@ -66,33 +66,31 @@ namespace openvslam {
             std::cout<<"error aa reli he\n";
             MATRIX y = camera_input - temp1;
 //            std::cout << "end of y ::" << y << "H MATRIX  ::" << H_mea_matrix << std::endl;
-            temp = P_uncer_cov_matrix * temp2;
-            MATRIX s = (H_mea_matrix * temp) + R_noise_matrix;
+//            temp = P_uncer_cov_matrix * temp2;
+//            MATRIX s = (H_mea_matrix * temp) + R_noise_matrix;
 //        std::cout<<"end of s -1 ::"<<s.inverse()<<std::endl;
-
-            std::cout<<"error aa reli he\n";
-            temp2= H_mea_matrix^1;
-            temp=P_uncer_cov_matrix*temp2;
-            temp.getRowCol();
-            temp1=MATRIX(3,3,1);
-//            int k=4;
-            std::lock_guard<std::mutex> lock(mtx_imu_);
-
-            MATRIX k = (temp * temp1);
-            k.getRowCol();
-            std::cout<<"error aa reli he\n";
+//
+//            std::cout<<"error aa reli he\n";
+//            temp2= H_mea_matrix^1;
+//            temp=P_uncer_cov_matrix*temp2;
+//            temp.getRowCol();
+//            temp1=s.inverse();
+//            temp1.print();
+//            MATRIX k = (temp * temp1);
+//            k.getRowCol();
+//            std::cout<<"error aa reli he\n";
 //            std::cout << "end of k ::" << k << std::endl;
-            temp = y*k;
-            std::cout<<"tari sasu no sak\n";
-            imu_pose_cw_ = imu_pose_cw_ + (temp);
-            std::cout<<"tari sasu no sak\n";
-            temp1=k * H_mea_matrix;
-            P_uncer_cov_matrix = (MATRIX(6, 6,1)- (temp1)) * P_uncer_cov_matrix;
+//            temp = k*y;
+//            std::cout<<"tari sasu no sak\n";
+//            imu_pose_cw_ = imu_pose_cw_ + (temp);
+//            std::cout<<"tari sasu no sak\n";
+//            temp1=k * H_mea_matrix;
+//            P_uncer_cov_matrix = (MATRIX(6, 6,1)- (temp1)) * P_uncer_cov_matrix;
         } catch (std::exception &e) {
             std::cerr << "exception run_camera_slam is : " << e.what() << std::endl;
         }
 //        std::cout << "end::" << (imu_pose_cw_) << std::endl;
-        return imu_pose_cw_;
+        return H_mea_matrix;
     }
 
     void imu::reset() {
