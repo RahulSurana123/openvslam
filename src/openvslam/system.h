@@ -35,7 +35,7 @@ class frame_publisher;
 
 class system {
 public:
-    double camera_x,camera_y,camera_z;
+    double camera_x,camera_y,camera_z,delta_cam_x,delta_cam_y,delta_cam_z,prev_cam_x,prev_cam_y,prev_cam_z;
     //! Constructor
     system(const std::shared_ptr<config>& cfg, const std::string& vocab_file_path);
 

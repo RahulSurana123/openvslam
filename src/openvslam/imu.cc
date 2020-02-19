@@ -56,14 +56,14 @@ namespace openvslam {
 //        std::cout<<"start:: "<<(imu_pose_cw_)<<"F MATRIX ::"<< F_tran_matrix <<std::endl;
 //        std::cout<<"P MATRIX ::"<< P_uncer_cov_matrix <<std::endl;
             MATRIX temp = (F_tran_matrix * P_uncer_cov_matrix);
-            std::cout<<"error aa reli he\n";
+//            std::cout<<"error aa reli he\n";
             MATRIX temp1=F_tran_matrix^1;
             P_uncer_cov_matrix = ( temp * temp1);
 //        std::cout<<"start:: "<<imu_pose_cw_<<"P MATRIX ::"<< P_uncer_cov_matrix <<std::endl;
             MATRIX temp2=H_mea_matrix^1;
             temp = P_uncer_cov_matrix * temp2;
             temp1 = (H_mea_matrix*imu_pose_cw_);
-            std::cout<<"error aa reli he\n";
+//            std::cout<<"error aa reli he\n";
             MATRIX y = camera_input - temp1;
 //            std::cout << "end of y ::" << y << "H MATRIX  ::" << H_mea_matrix << std::endl;
             temp = P_uncer_cov_matrix * temp2;
@@ -73,15 +73,15 @@ namespace openvslam {
 //            std::cout<<"error aa reli he\n";
             temp2= H_mea_matrix^1;
             temp=P_uncer_cov_matrix*temp2;
-            temp.getRowCol();
+//            temp.getRowCol();
             temp1=s.inverse();
-            temp1.print();
+//            temp1.print();
 
 //            std::cout << "ahiy thi\n";
             MATRIX k = (temp * temp1);
 //            std::cout << "uhdfusihfshfisud fuidf iuf isd fsif hiudh fsiud fhiufh isd hfuidsf hsuid fhsuid f\n";
 //            exit(0);
-            k.getRowCol();
+//            k.getRowCol();
 //            std::cout<<"error aa reli he\n";
 //            std::cout << "end of k ::" << k << std::endl;
             temp = k*y;

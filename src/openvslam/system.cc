@@ -267,13 +267,15 @@ Mat44_t system::feed_RGBD_frame(const cv::Mat& rgb_img, const cv::Mat& depthmap,
 
     check_reset_request();
 
-    const Mat44_t cam_pose_cw = tracker_->track_RGBD_image(rgb_img, depthmap, timestamp, mask);
+     Mat44_t cam_pose_cw = tracker_->track_RGBD_image(rgb_img, depthmap, timestamp, mask);
 
     frame_publisher_->update(tracker_);
     if (tracker_->tracking_state_ == tracker_state_t::Tracking) {
         map_publisher_->set_current_cam_pose(cam_pose_cw);
     }
-
+    cam_pose_cw(0,3) = delta_cam_x;
+    cam_pose_cw(1,3) = delta_cam_y;
+    cam_pose_cw(2,3) = delta_cam_z;
     return cam_pose_cw;
 }
 
@@ -314,7 +316,7 @@ void system::check_reset_request() {
     std::lock_guard<std::mutex> lock(mtx_reset_);
     if (reset_is_requested_) {
         tracker_->reset();
-        camera_y=camera_x=camera_z=0;
+        camera_y=camera_x=camera_z=prev_cam_x=prev_cam_y=prev_cam_z=delta_cam_x=delta_cam_y=delta_cam_z=0;
         reset_is_requested_ = false;
     }
 }

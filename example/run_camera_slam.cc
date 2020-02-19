@@ -249,7 +249,8 @@ void rgbd_tracking(const std::shared_ptr<openvslam::config>& cfg,
     double timestamp = 0.0;
     std::vector<double> track_times;
     unsigned int num_frame = 0;
-    SLAM.camera_x=SLAM.camera_z=SLAM.camera_y=0;
+    SLAM.camera_x=SLAM.camera_z=SLAM.camera_y=0,SLAM.delta_cam_x=0,SLAM.delta_cam_y=0,SLAM.delta_cam_z=0,SLAM.prev_cam_x=0,SLAM.prev_cam_y=0,SLAM.prev_cam_z=0;
+    bool first_ite=true;
     // run the SLAM in another thread
 
     std::thread thread([&]() {try{
@@ -311,6 +312,8 @@ void rgbd_tracking(const std::shared_ptr<openvslam::config>& cfg,
                 rs2::motion_frame gyro_frame = frames.first_or_default(RS2_STREAM_GYRO);
                 double delta_try=delta.elapsed();
                 delta.reset();
+                if(first_ite)
+                    delta_try=0.002;
                 //std::cout << "inside slam feedbACK"<< std::endl;
                 // input the current frame and estimate the camera pose
                 cam_pose_c=SLAM.feed_RGBD_frame(rgb_img, depth_img, timestamp);
@@ -330,14 +333,17 @@ void rgbd_tracking(const std::shared_ptr<openvslam::config>& cfg,
                 rs2_vector gyro = gyro_frame.get_motion_data();
                 double delta_time = delta_t.elapsed();
                 delta_t.reset();
+                if(first_ite)
+                    delta_time=0.002;
+                first_ite=false;
                 openvslam::MATRIX gyro_eigen =openvslam::MATRIX(3,1,0);
                 openvslam::MATRIX acc_eigen  =openvslam::MATRIX(3,1,0);
                 acc_eigen.mat[0][0]=accel.x;
                 acc_eigen.mat[1][0]=accel.y;
                 acc_eigen.mat[2][0]=accel.z;
-                gyro_eigen.mat[0][0]=gyro.x*delta_time*delta_time;
-                gyro_eigen.mat[1][0]=gyro.y*delta_time*delta_time;
-                gyro_eigen.mat[2][0]=gyro.z*delta_time*delta_time;
+                gyro_eigen.mat[0][0]=gyro.x*delta_time*delta_time/2;
+                gyro_eigen.mat[1][0]=gyro.y*delta_time*delta_time/2;
+                gyro_eigen.mat[2][0]=gyro.z*delta_time*delta_time/2;
                 if(acc_eigen.mat[0][0]<0)SLAM.camera_x-=x_advance;
                 else SLAM.camera_x+=x_advance;
                 if(acc_eigen.mat[1][0]<0)SLAM.camera_y-=y_advance;
@@ -349,11 +355,20 @@ void rgbd_tracking(const std::shared_ptr<openvslam::config>& cfg,
                 camera_inputs.mat[0][0] = SLAM.camera_x;
                 camera_inputs.mat[1][0] = SLAM.camera_y;
                 camera_inputs.mat[2][0] = SLAM.camera_z;
-                camera_inputs.print();
+//                camera_inputs.print();
                 openvslam::MATRIX vv=data1.update_imu_lvelocity_xyz(data1.acc_xyz_imu(acc_eigen, gyro_eigen),delta_time);
                 openvslam::MATRIX xxx=data1.update_imu_lposition_xyz(vv,delta_time);
                 openvslam::MATRIX out= data1.filtering_camera_pose_with_imu(xxx,camera_inputs);
+                SLAM.camera_x=out.mat[0][0];
+                SLAM.camera_y=out.mat[1][0];
+                SLAM.camera_z=out.mat[2][0];
 
+                SLAM.delta_cam_x=SLAM.camera_x-SLAM.prev_cam_x;
+                SLAM.delta_cam_y=SLAM.camera_y-SLAM.prev_cam_y;
+                SLAM.delta_cam_z=SLAM.camera_z-SLAM.prev_cam_z;
+                SLAM.prev_cam_x=SLAM.camera_x;
+                SLAM.prev_cam_z=SLAM.camera_z;
+                SLAM.prev_cam_y=SLAM.camera_y;
 //                out.print();
                 //  std::cout<<"camera inputs  :  "<<camera_inputs<<std::endl;
             }
