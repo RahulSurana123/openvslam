@@ -72,6 +72,9 @@ endif()
 # Threads
 find_package(Threads REQUIRED)
 
+find_package(realsense2 REQUIRED)
+
+
 # Eigen
 find_package(Eigen3 3.3 REQUIRED)
 

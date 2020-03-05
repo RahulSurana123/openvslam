@@ -45,6 +45,9 @@ public:
     bool operator>(const keyframe& keyfrm) const { return id_ > keyfrm.id_; }
     bool operator>=(const keyframe& keyfrm) const { return id_ >= keyfrm.id_; }
 
+    static bool lid(keyframe* k1 , keyframe* k2){
+        return k1->id_<k2->id_;
+    }
     /**
      * Constructor for building from a frame
      */

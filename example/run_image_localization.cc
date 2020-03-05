@@ -41,7 +41,8 @@ void mono_localization(const std::shared_ptr<openvslam::config>& cfg,
     // load the prebuilt map
     SLAM.load_map_database(map_db_path);
     // startup the SLAM process (it does not need initialization of a map)
-    SLAM.startup(false);
+//    SLAM.save_kf_xyz();
+    SLAM.startup(true);
     // select to activate the mapping module or not
     if (mapping) {
         SLAM.enable_mapping_module();
@@ -71,7 +72,12 @@ void mono_localization(const std::shared_ptr<openvslam::config>& cfg,
 
             if (!img.empty() && (i % frame_skip == 0)) {
                 // input the current frame and estimate the camera pose
-                SLAM.feed_monocular_frame(img, frame.timestamp_, mask);
+               openvslam::Mat44_t tt=SLAM.feed_monocular_frame(img, frame.timestamp_, mask);
+               SLAM.camera_x= tt(0,3);
+                SLAM.camera_y= tt(1,3);
+                SLAM.camera_z= tt(2,3);
+//                outdata<<"frame_no"<<ttg<<"   "<<SLAM.camera_x<< "   "<<SLAM.camera_y<< "   "<<SLAM.camera_z<<"\n";
+//               std::cout<<(rgb)<<"\n";
             }
 
             const auto tp_2 = std::chrono::steady_clock::now();

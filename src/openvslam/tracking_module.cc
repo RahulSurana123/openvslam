@@ -133,7 +133,15 @@ Mat44_t tracking_module::track_RGBD_image(const cv::Mat& img, const cv::Mat& dep
 
     const auto end = std::chrono::system_clock::now();
     elapsed_ms_ = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-
+//    curr_frm_.cam_pose_cw_(0,0)=curr_frm_.cam_pose_cw_(0,0)/1.4;
+//    curr_frm_.cam_pose_cw_(0,1)=curr_frm_.cam_pose_cw_(0,1)/1.4;
+//    curr_frm_.cam_pose_cw_(0,2)=curr_frm_.cam_pose_cw_(0,2)/1.4;
+//    curr_frm_.cam_pose_cw_(1,0)=curr_frm_.cam_pose_cw_(1,0)/1.4;
+//    curr_frm_.cam_pose_cw_(1,1)=curr_frm_.cam_pose_cw_(1,1)/1.4;
+//    curr_frm_.cam_pose_cw_(1,2)=curr_frm_.cam_pose_cw_(1,2)/1.4;
+//    curr_frm_.cam_pose_cw_(2,0)=curr_frm_.cam_pose_cw_(2,0)/1.4;
+//    curr_frm_.cam_pose_cw_(2,1)=curr_frm_.cam_pose_cw_(2,1)/1.4;
+//    curr_frm_.cam_pose_cw_(2,2)=curr_frm_.cam_pose_cw_(2,2)/1.4;
     return curr_frm_.cam_pose_cw_;
 }
 
@@ -254,6 +262,7 @@ void tracking_module::track() {
     }
 
     // update last frame
+//    std::cout<<curr_frm_.cam_pose_cw_<<"\n";
     last_frm_ = curr_frm_;
 }
 
@@ -297,6 +306,7 @@ bool tracking_module::track_current_frame() {
         // try to relocalize
         succeeded = relocalizer_.relocalize(curr_frm_);
         if (succeeded) {
+            std::cout<<curr_frm_.id_<<"   "<<"\n";
             last_reloc_frm_id_ = curr_frm_.id_;
         }
     }

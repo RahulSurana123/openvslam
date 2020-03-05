@@ -13,6 +13,7 @@ void essential_solver::find_via_ransac(const unsigned int max_num_iter, const bo
     const auto num_matches = static_cast<unsigned int>(matches_12_.size());
 
     // 1. Prepare for RANSAC
+    std::cout<<"changes by rahul essiential\n";
 
     // minimum number of samples (= 8)
     constexpr unsigned int min_set_size = 8;

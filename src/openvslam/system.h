@@ -3,7 +3,7 @@
 
 #include "openvslam/type.h"
 #include "openvslam/data/bow_vocabulary.h"
-
+#include "openvslam/data/keyframe.h"
 #include <string>
 #include <thread>
 #include <mutex>
@@ -26,6 +26,7 @@ namespace data {
 class camera_database;
 class map_database;
 class bow_database;
+class keyframe;
 } // namespace data
 
 namespace publish {
@@ -35,7 +36,11 @@ class frame_publisher;
 
 class system {
 public:
+
+    void save_kf_xyz();
+
     double camera_x,camera_y,camera_z,delta_cam_x,delta_cam_y,delta_cam_z,prev_cam_x,prev_cam_y,prev_cam_z;
+    bool imu_on;
     //! Constructor
     system(const std::shared_ptr<config>& cfg, const std::string& vocab_file_path);
 

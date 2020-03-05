@@ -165,6 +165,7 @@ Mat44_t keyframe::get_cam_pose_inv() const {
 
 Vec3_t keyframe::get_cam_center() const {
     std::lock_guard<std::mutex> lock(mtx_pose_);
+//    std::cout<<cam_center_<<"\n";
     return cam_center_;
 }
 

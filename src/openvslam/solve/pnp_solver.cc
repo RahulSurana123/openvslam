@@ -427,7 +427,9 @@ void pnp_solver::estimate_R_and_t(double R[3][3], double t[3]) {
         Abt_v_prime.col(2) = -Abt_v.col(2);
         for (unsigned int i = 0; i < 3; ++i) {
             for (unsigned int j = 0; j < 3; ++j) {
-                R[i][j] = Abt_u.row(i) * Abt_v_prime.row(j).transpose();
+                R[i][j] = (Abt_u.row(i) * Abt_v_prime.row(j).transpose());
+//                R[i][j]=R[i][j]/1.6;    //changes by rahul
+                std::cout<<"changes by rahul\n";
             }
         }
     }

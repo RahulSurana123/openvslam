@@ -90,7 +90,7 @@ private:
     //! Reference keyframes for each frame
     std::unordered_map<unsigned int, data::keyframe*> ref_keyfrms_;
     //! Relative pose against reference keyframe for each frame
-    eigen_alloc_unord_map<unsigned int, Mat44_t> rel_cam_poses_from_ref_keyfrms_;
+    eigen_alloc_unord_map<unsigned int, Mat44_t> rel_cam_poses_fzrom_ref_keyfrms_;
     //! Timestamp for each frame
     std::unordered_map<unsigned int, double> timestamps_;
     //! Flag whether each frame is lost or not

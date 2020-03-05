@@ -13,6 +13,7 @@ fundamental_solver::fundamental_solver(const std::vector<cv::KeyPoint>& undist_k
 
 void fundamental_solver::find_via_ransac(const unsigned int max_num_iter, const bool recompute) {
     const auto num_matches = static_cast<unsigned int>(matches_12_.size());
+    std::cout<<"changes by rahul  fundametal\n";
 
     // 0. Normalize keypoint coordinates
 

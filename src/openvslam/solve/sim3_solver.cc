@@ -89,6 +89,8 @@ sim3_solver::sim3_solver(data::keyframe* keyfrm_1, data::keyframe* keyfrm_2,
 
 void sim3_solver::find_via_ransac(const unsigned int max_num_iter) {
     // best modelを初期化
+//    std::cout<<"changes by rahul sim3\n";
+
     unsigned int max_num_inliers = 0;
     solution_is_valid_ = false;
     best_rot_12_ = Mat33_t::Zero();
@@ -216,7 +218,15 @@ void sim3_solver::compute_Sim3(const Mat33_t& pts_1, const Mat33_t& pts_2,
 
     // 回転行列に変換
     rot_21 = q_rot_21.normalized().toRotationMatrix();
-
+//    rot_21(0,0)=rot_21(0,0)/1.4;
+//    rot_21(0,1)=rot_21(0,1)/1.4;
+//    rot_21(0,2)=rot_21(0,2)/1.4;
+//    rot_21(1,0)=rot_21(1,0)/1.4;
+//    rot_21(1,1)=rot_21(1,1)/1.4;
+//    rot_21(1,2)=rot_21(1,2)/1.4;
+//    rot_21(2,0)=rot_21(2,0)/1.4;
+//    rot_21(2,1)=rot_21(2,1)/1.4;
+//    rot_21(2,2)=rot_21(2,2)/1.4;
     // 2.D Finding the Scale
 
     if (fix_scale_) {

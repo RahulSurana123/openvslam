@@ -4,7 +4,7 @@
 # Camera Model #
 #==============#
 
-Camera.name: "TUM RGBD monocular 01"
+Camera.name: "TUM 01"
 Camera.setup: "monocular"
 Camera.model: "perspective"
 
@@ -29,7 +29,7 @@ Camera.color_order: "RGB"
 # ORB Parameters #
 #================#
 
-Feature.max_num_keypoints: 1000
+Feature.max_num_keypoints: 5000
 Feature.scale_factor: 1.2
 Feature.num_levels: 8
 Feature.ini_fast_threshold: 20

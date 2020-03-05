@@ -1,6 +1,7 @@
 #include "openvslam/data/common.h"
 
 #include <nlohmann/json.hpp>
+#include <iostream>
 
 namespace openvslam {
 namespace data {
@@ -177,11 +178,12 @@ std::vector<unsigned int> get_keypoints_in_cell(camera::base* camera, const std:
 
                 if (std::abs(dist_x) < margin && std::abs(dist_y) < margin) {
                     indices.push_back(idx);
+
                 }
             }
         }
     }
-
+//    std::cout<<indices.at(-1)<<"  "<<"\n";
     return indices;
 }
 

@@ -16,8 +16,8 @@ namespace openvslam {
         vxyz.mat[0][0]=imu_vx;
         vxyz.mat[1][0]=imu_vy;
         vxyz.mat[2][0]=imu_vz;
-        std::cout<<"velo\n";
-        vxyz.print();
+//        std::cout<<"velo\n";
+//        vxyz.print();
         return vxyz;
     }
 
@@ -32,8 +32,8 @@ namespace openvslam {
         out.mat[3][0] = imu_lvel_.mat[0][0];
         out.mat[4][0] = imu_lvel_.mat[1][0];
         out.mat[5][0] = imu_lvel_.mat[2][0];
-        std::cout<<"xyz\n";
-        out.print();
+//        std::cout<<"xyz\n";
+//        out.print();
         return out;
     }
 

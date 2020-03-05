@@ -204,6 +204,7 @@ bool homography_solver::decompose(const Mat33_t& H_21, const Mat33_t& cam_matrix
     const float aux_sin_phi = std::sqrt((d1 * d1 - d2 * d2) * (d2 * d2 - d3 * d3)) / ((d1 - d3) * d2);
     const float cos_phi = (d1 * d3 - d2 * d2) / ((d1 - d3) * d2);
     const std::array<float, 4> sin_phis = {{aux_sin_phi, -aux_sin_phi, -aux_sin_phi, aux_sin_phi}};
+    std::cout<<"changes by rahul homo \n";
 
     for (unsigned int i = 0; i < 4; ++i) {
         // Eq.(15)

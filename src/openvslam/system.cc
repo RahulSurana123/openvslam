@@ -17,7 +17,8 @@
 #include <spdlog/spdlog.h>
 
 namespace openvslam {
-
+using namespace std;
+using namespace cv;
 system::system(const std::shared_ptr<config>& cfg, const std::string& vocab_file_path)
     : cfg_(cfg), camera_(cfg->camera_) {
     spdlog::debug("CONSTRUCT: system");
@@ -273,9 +274,10 @@ Mat44_t system::feed_RGBD_frame(const cv::Mat& rgb_img, const cv::Mat& depthmap,
     if (tracker_->tracking_state_ == tracker_state_t::Tracking) {
         map_publisher_->set_current_cam_pose(cam_pose_cw);
     }
+    if(imu_on){
     cam_pose_cw(0,3) = delta_cam_x;
     cam_pose_cw(1,3) = delta_cam_y;
-    cam_pose_cw(2,3) = delta_cam_z;
+    cam_pose_cw(2,3) = delta_cam_z;}
     return cam_pose_cw;
 }
 
@@ -349,4 +351,20 @@ void system::resume_other_threads() const {
     }
 }
 
+void system::save_kf_xyz() {
+    string filename = "/home/meditab/Desktop/keyframe_poses.txt";
+    ofstream outdata;
+    outdata.open(filename.c_str());
+    auto kfs = this->map_db_->get_all_keyframes();
+    sort(kfs.begin(), kfs.end(), data::keyframe::lid);
+    outdata << fixed;
+    for (int i = 0; i < kfs.size(); ++i) {
+        auto kf = kfs[i];
+        //outdata<<kf["trans_cw"]<<"\n";
+        Vec3_t cam = kf->get_cam_center();
+        outdata << kf->id_ << " " << cam(0) << " " << cam(1) << " " << cam(2) << endl;
+    }
+    outdata.close();
+}
+}
 } // namespace openvslam
