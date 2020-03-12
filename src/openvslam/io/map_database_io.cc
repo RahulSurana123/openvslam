@@ -5,7 +5,8 @@
 #include "openvslam/data/bow_database.h"
 #include "openvslam/data/map_database.h"
 #include "openvslam/io/map_database_io.h"
-
+#include <fstream>
+using std::ofstream;
 #include <spdlog/spdlog.h>
 #include <nlohmann/json.hpp>
 
@@ -18,13 +19,14 @@ map_database_io::map_database_io(data::camera_database* cam_db, data::map_databa
 
 void map_database_io::save_message_pack(const std::string& path) {
     std::lock_guard<std::mutex> lock(data::map_database::mtx_database_);
-
+    ofstream outdata;
+    outdata.open("keyframe_rgbd.txt");
     assert(cam_db_ && map_db_);
     const auto cameras = cam_db_->to_json();
     nlohmann::json keyfrms;
     nlohmann::json landmarks;
     map_db_->to_json(keyfrms, landmarks);
-
+//    outdata<<"keyframes"<< keyfrms["cam_pose_cw"]<<"\n\n\n\n\n\n";
     nlohmann::json json{{"cameras", cameras},
                         {"keyframes", keyfrms},
                         {"landmarks", landmarks},

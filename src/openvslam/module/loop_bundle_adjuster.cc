@@ -53,6 +53,7 @@ void loop_bundle_adjuster::optimize(const unsigned int identifier) {
 
         // if count_loop_BA_execution() was called during the loop BA or the loop BA was aborted,
         // cannot update the map
+        num_exec_loop_BA = num_exec_loop_BA_;
         if (num_exec_loop_BA != num_exec_loop_BA_ || abort_loop_BA_) {
             spdlog::info("abort loop bundle adjustment");
             loop_BA_is_running_ = false;

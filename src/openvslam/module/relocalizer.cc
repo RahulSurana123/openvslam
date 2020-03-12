@@ -146,8 +146,15 @@ bool relocalizer::relocalize(data::frame& curr_frm) {
             }
             curr_frm.landmarks_.at(idx) = nullptr;
         }
+<<<<<<< HEAD
 auto tt =keyfrm->get_cam_center();
         outdata<<keyfrm->id_<<" "<<tt<<"\n";
+||||||| merged common ancestors
+
+=======
+        auto tt=keyfrm->get_cam_center();
+        std::cout<<tt<<"\n";
+>>>>>>> c0e7ec24c95835212c6046d1c4f7ca44e5639d76
         return true;
     }
 
