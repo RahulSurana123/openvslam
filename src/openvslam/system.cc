@@ -348,5 +348,21 @@ void system::resume_other_threads() const {
         mapper_->resume();
     }
 }
+    void system::save_kf_xyz()
+    {
+        std::string filename = "/home/meditab/Desktop/keyframe_poses2.txt";
+        std::ofstream outdata;
+        outdata.open(filename.c_str());
+        auto kfs = this->map_db_->get_all_keyframes();
+        sort(kfs.begin(),kfs.end(),data::keyframe::lid);
+        outdata<<std::fixed;
+        for(auto kf : kfs)
+        {
+            //outdata<<kf["trans_cw"]<<"\n";
+            Vec3_t cam = kf->get_cam_center();
+            outdata<< kf->id_ << " " <<cam(0)<<" "<<cam(1)<<" "<<cam(2)<<std::endl;
+        }
+        outdata.close();
 
+    }
 } // namespace openvslam

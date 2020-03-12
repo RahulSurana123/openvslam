@@ -3,7 +3,7 @@
 
 #include "openvslam/type.h"
 #include "openvslam/data/bow_vocabulary.h"
-
+#include "openvslam/data/keyframe.h"
 #include <string>
 #include <thread>
 #include <mutex>
@@ -26,6 +26,7 @@ namespace data {
 class camera_database;
 class map_database;
 class bow_database;
+class keyframe;
 } // namespace data
 
 namespace publish {
@@ -50,7 +51,7 @@ public:
 
     //! Shutdown the SLAM system
     void shutdown();
-
+    void save_kf_xyz();
     //-----------------------------------------
     // data I/O
 
@@ -207,6 +208,8 @@ private:
 
     //! mutex for flags of enable/disable loop detector
     mutable std::mutex mtx_loop_detector_;
+
+
 };
 
 } // namespace openvslam

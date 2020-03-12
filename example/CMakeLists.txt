@@ -21,6 +21,9 @@ else()
     message(STATUS "Google Perftools: DISABLED")
 endif()
 
+include_directories(/usr/include
+        /opt/ros/kinetic/include
+        /opt/ros/kinetic/share)
 # ----- Show dialog -----
 
 if(USE_PANGOLIN_VIEWER)
@@ -61,6 +64,9 @@ list(APPEND EXECUTABLE_TARGETS run_kitti_slam)
 
 add_executable(run_tum_rgbd_slam run_tum_rgbd_slam.cc util/tum_rgbd_util.cc)
 list(APPEND EXECUTABLE_TARGETS run_tum_rgbd_slam)
+
+add_executable(rgbd_ros rgbd_ros.cc)
+list(APPEND EXECUTABLE_TARGETS rgbd_ros)
 
 foreach(EXECUTABLE_TARGET IN LISTS EXECUTABLE_TARGETS)
     # Set output directory for executables

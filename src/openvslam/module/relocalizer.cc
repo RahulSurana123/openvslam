@@ -4,11 +4,12 @@
 #include "openvslam/data/bow_database.h"
 #include "openvslam/module/relocalizer.h"
 #include "openvslam/util/fancy_index.h"
-
+#include "fstream"
 #include <spdlog/spdlog.h>
 
 namespace openvslam {
 namespace module {
+std::ofstream outdata;
 
 relocalizer::relocalizer(data::bow_database* bow_db,
                          const double bow_match_lowe_ratio, const double proj_match_lowe_ratio,
@@ -26,7 +27,7 @@ relocalizer::~relocalizer() {
 
 bool relocalizer::relocalize(data::frame& curr_frm) {
     curr_frm.compute_bow();
-
+    outdata.open("keyframe_detail.txt");
     // acquire relocalization candidates
     const auto reloc_candidates = bow_db_->acquire_relocalization_candidates(&curr_frm);
     if (reloc_candidates.empty()) {
@@ -145,7 +146,8 @@ bool relocalizer::relocalize(data::frame& curr_frm) {
             }
             curr_frm.landmarks_.at(idx) = nullptr;
         }
-
+auto tt =keyfrm->get_cam_center();
+        outdata<<keyfrm->id_<<" "<<tt<<"\n";
         return true;
     }
 
