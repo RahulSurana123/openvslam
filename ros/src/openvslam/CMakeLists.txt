@@ -7,7 +7,8 @@ endif()
 if(POLICY CMP0074)
     cmake_policy(SET CMP0074 OLD)
 endif()
-
+find_library(Pangolin_Viewer_LIB pangolin_viewer HINTS ${OpenVSLAM_LIB_DIR})
+    find_package(Pangolin REQUIRED)
 # digging into the root directory of OpenVSLAM
 get_filename_component(DEFAULT_OpenVSLAM_DIR ${PROJECT_SOURCE_DIR} DIRECTORY)
 get_filename_component(DEFAULT_OpenVSLAM_DIR ${DEFAULT_OpenVSLAM_DIR} DIRECTORY)
@@ -219,7 +220,8 @@ message(STATUS "BoW framework: ${BOW_FRAMEWORK} (found in ${BOW_INCLUDE_DIRS})")
 
 include_directories(
         ${catkin_INCLUDE_DIRS}
-        ${OpenVSLAM_SRC_DIR})
+        ${OpenVSLAM_SRC_DIR}
+        src)
 
 link_libraries(
         ${catkin_LIBRARIES}

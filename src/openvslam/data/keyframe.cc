@@ -309,7 +309,6 @@ Vec3_t keyframe::triangulate_stereo(const unsigned int idx) const {
                 const Vec3_t pos_c{unproj_x, unproj_y, depth};
 
                 std::lock_guard<std::mutex> lock(mtx_pose_);
-
                 return cam_pose_wc_.block<3, 3>(0, 0) * pos_c + cam_pose_wc_.block<3, 1>(0, 3);
             }
             else {

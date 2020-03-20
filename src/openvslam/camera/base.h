@@ -16,11 +16,10 @@ namespace camera {
 enum class setup_type_t {
     Monocular = 0,
     Stereo = 1,
-    RGBD = 2,
-    RGBDIMU=3
+    RGBD = 2
 };
 
-const std::array<std::string, 4> setup_type_to_string = {{"Monocular", "Stereo", "RGBD", "RGBDIMU"}};
+const std::array<std::string, 3> setup_type_to_string = {{"Monocular", "Stereo", "RGBD"}};
 
 enum class model_type_t {
     Perspective = 0,

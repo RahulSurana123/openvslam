@@ -145,7 +145,7 @@ bool relocalizer::relocalize(data::frame& curr_frm) {
             }
             curr_frm.landmarks_.at(idx) = nullptr;
         }
-
+        std::cout<<keyfrm->get_cam_center()<<"\n";
         return true;
     }
 

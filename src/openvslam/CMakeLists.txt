@@ -6,6 +6,10 @@ set(spdlog_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/3rd/spdlog/include)
 # json
 set(json_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/3rd/json/include)
 
+include_directories(
+/home/meditab/work/g2o/g2o/
+/home/meditab/work/g2o/
+  )
 # g2o
 find_package(g2o REQUIRED
              COMPONENTS
@@ -17,6 +21,7 @@ find_package(g2o REQUIRED
              g2o::solver_eigen
              g2o::solver_csparse
              g2o::csparse_extension
+
              OPTIONAL_COMPONENTS
              g2o::csparse)
 
@@ -37,7 +42,7 @@ else()
 endif()
 
 # ----- Create OpenVSLAM library -----
-
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
 add_library(${PROJECT_NAME}
             SHARED
             ${CMAKE_CURRENT_SOURCE_DIR}/config.h
@@ -47,9 +52,6 @@ add_library(${PROJECT_NAME}
             ${CMAKE_CURRENT_SOURCE_DIR}/mapping_module.h
             ${CMAKE_CURRENT_SOURCE_DIR}/global_optimization_module.h
             ${CMAKE_CURRENT_SOURCE_DIR}/config.cc
-	   # ${CMAKE_CURRENT_SOURCE_DIR}/imu.h
-	   # ${CMAKE_CURRENT_SOURCE_DIR}/Matri.h
-        #    ${CMAKE_CURRENT_SOURCE_DIR}/imu.cc
             ${CMAKE_CURRENT_SOURCE_DIR}/system.cc
             ${CMAKE_CURRENT_SOURCE_DIR}/tracking_module.cc
             ${CMAKE_CURRENT_SOURCE_DIR}/mapping_module.cc
@@ -172,6 +174,10 @@ install(FILES ${json_INCLUDE_DIR}/nlohmann/json.hpp ${json_INCLUDE_DIR}/nlohmann
         DESTINATION ${OPENVSLAM_INCLUDE_INSTALL_DIR}/3rd/json/include/nlohmann)
 install(DIRECTORY ${spdlog_INCLUDE_DIR}
         DESTINATION ${OPENVSLAM_INCLUDE_INSTALL_DIR}/3rd/spdlog)
+
+# file(GLOB HEADERS "/home/meditab/work/g2o/g2o/core/*.h")
+# install(FILES ${HEADERS}
+#         DESTINATION ${OPENVSLAM_INCLUDE_INSTALL_DIR})
 
 # ----- Append subdirectory -----
 

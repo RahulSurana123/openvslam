@@ -36,8 +36,6 @@ class frame_publisher;
 class system {
 public:
     //! Constructor
-    double camera_x=0,camera_y=0,camera_z=0;
-//    Mat44_t xyz;
     system(const std::shared_ptr<config>& cfg, const std::string& vocab_file_path);
 
     //! Destructor
@@ -114,11 +112,9 @@ public:
     //! Feed an RGBD frame to SLAM system
     //! (Note: RGB and Depth images must be aligned)
     Mat44_t feed_RGBD_frame(const cv::Mat& rgb_img, const cv::Mat& depthmap, const double timestamp, const cv::Mat& mask = cv::Mat{});
+
     //-----------------------------------------
     // management for pause
-//    Eigen::Vector3d camera_rpy(const Mat44_t cam_pose_cw_);
-
-//    Mat44_t filtering_camera_pose_with_imu(const Mat44_t cam_pose_cw_,Eigen::Vector3d rpy);
 
     //! Pause the tracking module
     void pause_tracker();
@@ -146,7 +142,7 @@ public:
 
     //!! Termination of the system is requested or not
     bool terminate_is_requested() const;
-
+    const std::shared_ptr<config> cfg_;
 private:
     //! Check reset request of the system
     void check_reset_request();
@@ -158,7 +154,7 @@ private:
     void resume_other_threads() const;
 
     //! config
-    const std::shared_ptr<config> cfg_;
+
     //! camera model
     camera::base* camera_ = nullptr;
 
@@ -210,9 +206,6 @@ private:
 
     //! mutex for flags of enable/disable loop detector
     mutable std::mutex mtx_loop_detector_;
-
-
-
 };
 
 } // namespace openvslam

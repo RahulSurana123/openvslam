@@ -5,7 +5,7 @@
 #==============#
 
 Camera.name: "TUM-RGBD RGBD 01"
-Camera.setup: "RGBDIMU"
+Camera.setup: "RGBD"
 Camera.model: "perspective"
 
 Camera.fx: 517.306408
@@ -20,8 +20,8 @@ Camera.p2: 0.002628
 Camera.k3: 1.163314
 
 Camera.fps: 30.0
-Camera.cols: 640
-Camera.rows: 480
+Camera.cols: 1280
+Camera.rows: 720
 Camera.focal_x_baseline: 40.0
 
 Camera.color_order: "RGB"
@@ -30,7 +30,7 @@ Camera.color_order: "RGB"
 # ORB Parameters #
 #================#
 
-Feature.max_num_keypoints: 1000
+Feature.max_num_keypoints: 5000
 Feature.scale_factor: 1.2
 Feature.num_levels: 8
 Feature.ini_fast_threshold: 20
@@ -41,7 +41,7 @@ Feature.min_fast_threshold: 7
 #=====================#
 
 depth_threshold: 40.0
-depthmap_factor: 5.0
+depthmap_factor: 1000.0
 
 #===========================#
 # PangolinViewer Parameters #

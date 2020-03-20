@@ -17,6 +17,7 @@
 #include <spdlog/spdlog.h>
 
 namespace openvslam {
+
 tracking_module::tracking_module(const std::shared_ptr<config>& cfg, system* system, data::map_database* map_db,
                                  data::bow_vocabulary* bow_vocab, data::bow_database* bow_db)
     : cfg_(cfg), camera_(cfg->camera_), system_(system), map_db_(map_db), bow_vocab_(bow_vocab), bow_db_(bow_db),
@@ -24,7 +25,7 @@ tracking_module::tracking_module(const std::shared_ptr<config>& cfg, system* sys
       frame_tracker_(camera_, 10), relocalizer_(bow_db_), pose_optimizer_(),
       keyfrm_inserter_(cfg_->camera_->setup_type_, cfg_->true_depth_thr_, map_db, bow_db, 0, cfg_->camera_->fps_) {
     spdlog::debug("CONSTRUCT: tracking_module");
-    std::cout<<"While tracker "<<std::endl;
+
     extractor_left_ = new feature::orb_extractor(cfg_->orb_params_);
     if (camera_->setup_type_ == camera::setup_type_t::Monocular) {
         ini_extractor_left_ = new feature::orb_extractor(cfg_->orb_params_);
@@ -124,13 +125,15 @@ Mat44_t tracking_module::track_RGBD_image(const cv::Mat& img, const cv::Mat& dep
     cv::Mat img_depth = depthmap;
     util::convert_to_grayscale(img_gray_, camera_->color_order_);
     util::convert_to_true_depth(img_depth, cfg_->depthmap_factor_);
-    std::cout<<"While track_rgbd_image "<<std::endl;
+
     // create current frame object
     curr_frm_ = data::frame(img_gray_, img_depth, timestamp, extractor_left_, bow_vocab_, camera_, cfg_->true_depth_thr_, mask);
 
     track();
+
     const auto end = std::chrono::system_clock::now();
     elapsed_ms_ = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+
     return curr_frm_.cam_pose_cw_;
 }
 
@@ -139,9 +142,7 @@ void tracking_module::reset() {
 
     initializer_.reset();
     keyfrm_inserter_.reset();
-    system_->camera_x=0;
-    system_->camera_y=0;
-    system_->camera_z=0;
+
     mapper_->request_reset();
     global_optimizer_->request_reset();
 
@@ -158,13 +159,12 @@ void tracking_module::reset() {
 }
 
 void tracking_module::track() {
-try{
     if (tracking_state_ == tracker_state_t::NotInitialized) {
         tracking_state_ = tracker_state_t::Initializing;
     }
 
     last_tracking_state_ = tracking_state_;
-    std::cout<<"While track "<<std::endl;
+
     // check if pause is requested
     check_and_execute_pause();
     while (is_paused()) {
@@ -252,11 +252,9 @@ try{
     if (curr_frm_.cam_pose_cw_is_valid_) {
         last_cam_pose_from_ref_keyfrm_ = curr_frm_.cam_pose_cw_ * curr_frm_.ref_keyfrm_->get_cam_pose_inv();
     }
-    std::cout<<"While track end"<<std::endl;
+
     // update last frame
     last_frm_ = curr_frm_;
-}catch(std::exception& e) {
-    std::cerr << "exception track_chu is : " <<e.what()<< std::endl;}
 }
 
 bool tracking_module::initialize() {
@@ -269,7 +267,7 @@ bool tracking_module::initialize() {
         system_->request_reset();
         return false;
     }
-//    std::cout<<"While track init"<<std::endl;
+
     // if initializing was failed -> try to initialize with the next frame
     if (initializer_.get_state() != module::initializer_state_t::Succeeded) {
         return false;
@@ -281,7 +279,6 @@ bool tracking_module::initialize() {
 
 bool tracking_module::track_current_frame() {
     bool succeeded = false;
-//    std::cout<<"While track current frame"<<std::endl;
     if (tracking_state_ == tracker_state_t::Tracking) {
         // Tracking mode
         if (velocity_is_valid_ && last_reloc_frm_id_ + 2 < curr_frm_.id_) {
@@ -307,7 +304,6 @@ bool tracking_module::track_current_frame() {
 }
 
 void tracking_module::update_motion_model() {
-//    std::cout<<"While update motion model"<<std::endl;
     if (last_frm_.cam_pose_cw_is_valid_) {
         Mat44_t last_frm_cam_pose_wc = Mat44_t::Identity();
         last_frm_cam_pose_wc.block<3, 3>(0, 0) = last_frm_.get_rotation_inv();
@@ -322,7 +318,6 @@ void tracking_module::update_motion_model() {
 }
 
 void tracking_module::apply_landmark_replace() {
-//    std::cout<<"While apply landmark replace"<<std::endl;
     for (unsigned int idx = 0; idx < last_frm_.num_keypts_; ++idx) {
         auto lm = last_frm_.landmarks_.at(idx);
         if (!lm) {
@@ -347,7 +342,7 @@ void tracking_module::update_last_frame() {
 bool tracking_module::optimize_current_frame_with_local_map() {
     // acquire more 2D-3D matches by reprojecting the local landmarks to the current frame
     search_local_landmarks();
-//    std::cout<<"While optimize_current frame with local map"<<std::endl;
+
     // optimize the pose
     pose_optimizer_.optimize(curr_frm_);
 
@@ -374,7 +369,7 @@ bool tracking_module::optimize_current_frame_with_local_map() {
         }
     }
 
-    constexpr unsigned int num_tracked_lms_thr = 20;      // MAX_THRESHOLD_PARAM_HERE  was 20
+    constexpr unsigned int num_tracked_lms_thr = 20;
 
     // if recently relocalized, use the more strict threshold
     if (curr_frm_.id_ < last_reloc_frm_id_ + camera_->fps_ && num_tracked_lms_ < 2 * num_tracked_lms_thr) {
@@ -468,7 +463,7 @@ void tracking_module::update_local_keyframes() {
         local_keyfrms_.push_back(keyfrm);
         return true;
     };
-    for (auto iter = local_keyfrms_.cbegin(), end = local_keyfrms_.cend(); iter != end; ++iter) {
+    for (auto iter = local_keyfrms_.cbegin(); iter != local_keyfrms_.cend(); ++iter) {
         if (max_num_local_keyfrms < local_keyfrms_.size()) {
             break;
         }
@@ -588,7 +583,11 @@ void tracking_module::search_local_landmarks() {
 
     // acquire more 2D-3D matches by projecting the local landmarks to the current frame
     match::projection projection_matcher(0.8);
-    const float margin = (curr_frm_.id_ < last_reloc_frm_id_ + 2) ? (float)20.0 : ((camera_->setup_type_ == camera::setup_type_t::RGBD) || (camera_->setup_type_ == camera::setup_type_t::RGBDIMU)? (float)10.0 : (float)5.0);
+    const float margin = (curr_frm_.id_ < last_reloc_frm_id_ + 2)
+                             ? 20.0
+                             : ((camera_->setup_type_ == camera::setup_type_t::RGBD)
+                                    ? 10.0
+                                    : 5.0);
     projection_matcher.match_frame_and_landmarks(curr_frm_, local_landmarks_, margin);
 }
 
@@ -616,7 +615,6 @@ void tracking_module::insert_new_keyframe() {
 }
 
 void tracking_module::request_pause() {
-    std::cout<<"While tracking request pause"<<std::endl;
     std::lock_guard<std::mutex> lock1(mtx_pause_);
     pause_is_requested_ = true;
 }

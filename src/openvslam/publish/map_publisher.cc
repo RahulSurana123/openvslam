@@ -19,7 +19,6 @@ map_publisher::~map_publisher() {
 
 void map_publisher::set_current_cam_pose(const Mat44_t& cam_pose_cw) {
     std::lock_guard<std::mutex> lock(mtx_cam_pose_);
-//    std::cout<<"camera pose :: \n"<<cam_pose_cw<<std::endl;
     cam_pose_cw_ = cam_pose_cw;
 }
 

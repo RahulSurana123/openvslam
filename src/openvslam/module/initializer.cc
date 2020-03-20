@@ -72,8 +72,7 @@ bool initializer::initialize(data::frame& curr_frm) {
             break;
         }
         case camera::setup_type_t::Stereo:
-        case camera::setup_type_t::RGBD:
-        case camera::setup_type_t::RGBDIMU:{
+        case camera::setup_type_t::RGBD: {
             state_ = initializer_state_t::Initializing;
 
             // try to initialize

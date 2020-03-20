@@ -33,9 +33,7 @@ setup_type_t base::load_setup_type(const YAML::Node& yaml_node) {
     else if (setup_type_str == "RGBD") {
         return camera::setup_type_t::RGBD;
     }
-    else if (setup_type_str == "RGBDIMU") {
-        return camera::setup_type_t::RGBDIMU;
-    }
+
     throw std::runtime_error("Invalid setup type: " + setup_type_str);
 }
 

@@ -135,7 +135,6 @@ void frame::set_cam_pose(const g2o::SE3Quat& cam_pose_cw) {
 }
 
 void frame::update_pose_params() {
-
     rot_cw_ = cam_pose_cw_.block<3, 3>(0, 0);
     rot_wc_ = rot_cw_.transpose();
     trans_cw_ = cam_pose_cw_.block<3, 1>(0, 3);
@@ -261,7 +260,7 @@ void frame::extract_orb(const cv::Mat& img, const cv::Mat& mask, const image_sid
 }
 
 void frame::compute_stereo_from_depth(const cv::Mat& right_img_depth) {
-    assert(camera_->setup_type_ == camera::setup_type_t::RGBD || camera_->setup_type_ == camera::setup_type_t::RGBDIMU);
+    assert(camera_->setup_type_ == camera::setup_type_t::RGBD);
 
     // Initialize with invalid value
     stereo_x_right_ = std::vector<float>(num_keypts_, -1);
