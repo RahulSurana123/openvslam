@@ -1,3 +1,6 @@
+
+this project has been taken from openvslam project of xdspacelab and target is to implement a real time robot with the ability to move on its own when given a command
+
 <!--#//<p align="center">
 ?#//<img src="https://raw.githubusercontent.com/xdspacelab/openvslam/master/docs/img/logo.png" width="435px">
 ?#//</p>
