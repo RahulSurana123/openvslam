@@ -4,7 +4,7 @@
 *******************************************************************************************************************************************************************************************************************************************************
 
 
-##this project has been taken from openvslam project of xdspacelab and target is to implement a real time robot with the ability to move on its own when given a command
+## This project has been taken from openvslam project of xdspacelab and target is to implement a real time robot with the ability to move on its own when given a command
 
 
 ********************************************************************************************************************************************************************************************************************************************************
